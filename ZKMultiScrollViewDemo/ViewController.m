@@ -7,8 +7,9 @@
 //
 
 #import "ViewController.h"
-
-@interface ViewController ()
+#import "ZKMultiScrollViewController.h"
+#import "TestTableViewController.h"
+@interface ViewController () <ZKMultiScrollViewProtocol>
 
 @end
 
@@ -16,14 +17,33 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  // Do any additional setup after loading the view, typically from a nib.
+  UIButton *but = [[UIButton alloc] initWithFrame:CGRectMake(100, 100, 100, 100)];
+  [self.view addSubview:but];
+  [but addTarget:self action:@selector(pushTestViewController:) forControlEvents:UIControlEventTouchUpInside];
+  [but setTitle:@"push" forState:UIControlStateNormal];
+  [but setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+  [self.navigationController setNavigationBarHidden:YES];
+}
+
+- (void)pushTestViewController:(id)sender {
+  ZKMultiScrollViewController *vc = [[ZKMultiScrollViewController alloc] init];
+  vc.delegate = self;
+  [self.navigationController pushViewController:vc animated:YES];
 }
 
 
-- (void)didReceiveMemoryWarning {
-  [super didReceiveMemoryWarning];
-  // Dispose of any resources that can be recreated.
+- (NSInteger)numberOfScrollablesForController:(UIViewController *)delegater {
+  return 3;
 }
 
+- (NSString*)tabNameForScrollableAtIndex:(NSInteger)index forController:(UIViewController *)delegater {
+  return [NSString stringWithFormat:@"tab:%ld", index];
+}
+
+- (UIViewController<ZKScrollableProtocol> *)scrollableAtIndex:(NSInteger)index forController:(UIViewController *)delegater {
+  TestTableViewController *vc = [[TestTableViewController alloc] init];
+  vc.nCells = (1 + index) * 10;
+  return vc;
+}
 
 @end

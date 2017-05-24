@@ -7,15 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F7381A721ED5E95C0022964C /* TestTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F7381A711ED5E95C0022964C /* TestTableViewController.m */; };
 		F74B36761ED5DB4A009C1DD4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = F74B36751ED5DB4A009C1DD4 /* main.m */; };
 		F74B36791ED5DB4A009C1DD4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F74B36781ED5DB4A009C1DD4 /* AppDelegate.m */; };
 		F74B367C1ED5DB4A009C1DD4 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F74B367B1ED5DB4A009C1DD4 /* ViewController.m */; };
 		F74B367F1ED5DB4A009C1DD4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F74B367D1ED5DB4A009C1DD4 /* Main.storyboard */; };
 		F74B36811ED5DB4A009C1DD4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F74B36801ED5DB4A009C1DD4 /* Assets.xcassets */; };
 		F74B36841ED5DB4A009C1DD4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F74B36821ED5DB4A009C1DD4 /* LaunchScreen.storyboard */; };
+		F74B368E1ED5DB7F009C1DD4 /* ZKMultiScrollViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F74B368D1ED5DB7F009C1DD4 /* ZKMultiScrollViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		F7381A701ED5E95C0022964C /* TestTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestTableViewController.h; sourceTree = "<group>"; };
+		F7381A711ED5E95C0022964C /* TestTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestTableViewController.m; sourceTree = "<group>"; };
 		F74B36711ED5DB4A009C1DD4 /* ZKMultiScrollViewDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZKMultiScrollViewDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F74B36751ED5DB4A009C1DD4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		F74B36771ED5DB4A009C1DD4 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -26,6 +30,9 @@
 		F74B36801ED5DB4A009C1DD4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F74B36831ED5DB4A009C1DD4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F74B36851ED5DB4A009C1DD4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F74B368C1ED5DB7F009C1DD4 /* ZKMultiScrollViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZKMultiScrollViewController.h; sourceTree = "<group>"; };
+		F74B368D1ED5DB7F009C1DD4 /* ZKMultiScrollViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZKMultiScrollViewController.m; sourceTree = "<group>"; };
+		F74B368F1ED5DBAB009C1DD4 /* ZKMultiScrollViewProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZKMultiScrollViewProtocol.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +65,9 @@
 		F74B36731ED5DB4A009C1DD4 /* ZKMultiScrollViewDemo */ = {
 			isa = PBXGroup;
 			children = (
+				F7381A701ED5E95C0022964C /* TestTableViewController.h */,
+				F7381A711ED5E95C0022964C /* TestTableViewController.m */,
+				F74B368B1ED5DB5B009C1DD4 /* exports */,
 				F74B36771ED5DB4A009C1DD4 /* AppDelegate.h */,
 				F74B36781ED5DB4A009C1DD4 /* AppDelegate.m */,
 				F74B367A1ED5DB4A009C1DD4 /* ViewController.h */,
@@ -77,6 +87,16 @@
 				F74B36751ED5DB4A009C1DD4 /* main.m */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		F74B368B1ED5DB5B009C1DD4 /* exports */ = {
+			isa = PBXGroup;
+			children = (
+				F74B368C1ED5DB7F009C1DD4 /* ZKMultiScrollViewController.h */,
+				F74B368D1ED5DB7F009C1DD4 /* ZKMultiScrollViewController.m */,
+				F74B368F1ED5DBAB009C1DD4 /* ZKMultiScrollViewProtocol.h */,
+			);
+			path = exports;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -153,6 +173,8 @@
 			files = (
 				F74B367C1ED5DB4A009C1DD4 /* ViewController.m in Sources */,
 				F74B36791ED5DB4A009C1DD4 /* AppDelegate.m in Sources */,
+				F7381A721ED5E95C0022964C /* TestTableViewController.m in Sources */,
+				F74B368E1ED5DB7F009C1DD4 /* ZKMultiScrollViewController.m in Sources */,
 				F74B36761ED5DB4A009C1DD4 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -312,6 +334,7 @@
 				F74B368A1ED5DB4A009C1DD4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
