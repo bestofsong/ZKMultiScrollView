@@ -232,16 +232,27 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
   
   CGFloat destOffsetY = MIN(targetOffset.y, 0);
   CGFloat nextScrollYMax = [nextScroll maxOffsetY];
+  
+  
   if (destOffsetY >= 0 && nowOffset.y >= destOffsetY) {
     return;
   }
   
+  BOOL shouldForceSyncCoverScroll = NO;
   if (destOffsetY >= 0) {
     targetOffset.y = MIN(nextScrollYMax, 0);
+    shouldForceSyncCoverScroll = nextScrollYMax < 0;
   } else {
     targetOffset.y = MIN(nextScrollYMax, destOffsetY);
+    shouldForceSyncCoverScroll = nextScrollYMax < destOffsetY;
   }
   [nextScroll setContentOffset:targetOffset animated:YES];
+  if (shouldForceSyncCoverScroll) {
+    CGPoint coverOffset = targetOffset;
+    coverOffset.y += self.headerView.bounds.size.height;
+    [self.coverScrollView setContentOffset:coverOffset animated:YES];
+  }
+  
 }
 
 // only works when horizontal scroll just begins
