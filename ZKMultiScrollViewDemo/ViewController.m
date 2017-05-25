@@ -10,7 +10,7 @@
 #import "ZKMultiScrollViewController.h"
 #import "TestTableViewController.h"
 @interface ViewController () <ZKMultiScrollViewProtocol>
-
+@property (strong, nonatomic) UIView *header;
 @end
 
 @implementation ViewController
@@ -23,6 +23,11 @@
   [but setTitle:@"push" forState:UIControlStateNormal];
   [but setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
   [self.navigationController setNavigationBarHidden:YES];
+  
+  CGRect headFrame = self.view.bounds;
+  headFrame.size.height = 240;
+  self.header = [[UIView alloc] initWithFrame:headFrame];
+  self.header.backgroundColor = [UIColor greenColor];
 }
 
 - (void)pushTestViewController:(id)sender {
@@ -44,6 +49,10 @@
   TestTableViewController *vc = [[TestTableViewController alloc] init];
   vc.nCells = (1 + index) * 10;
   return vc;
+}
+
+- (UIView*)headerViewForController:(UIViewController *)delegater {
+  return self.header;
 }
 
 @end

@@ -15,6 +15,8 @@
 		F74B36811ED5DB4A009C1DD4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F74B36801ED5DB4A009C1DD4 /* Assets.xcassets */; };
 		F74B36841ED5DB4A009C1DD4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F74B36821ED5DB4A009C1DD4 /* LaunchScreen.storyboard */; };
 		F74B368E1ED5DB7F009C1DD4 /* ZKMultiScrollViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F74B368D1ED5DB7F009C1DD4 /* ZKMultiScrollViewController.m */; };
+		F7A6F8051ED72227006BDC64 /* ZKTouchThroughScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = F7A6F8041ED72227006BDC64 /* ZKTouchThroughScrollView.m */; };
+		F7A6F8081ED733B2006BDC64 /* UIScrollView+Boundry.m in Sources */ = {isa = PBXBuildFile; fileRef = F7A6F8071ED733B2006BDC64 /* UIScrollView+Boundry.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,6 +35,10 @@
 		F74B368C1ED5DB7F009C1DD4 /* ZKMultiScrollViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZKMultiScrollViewController.h; sourceTree = "<group>"; };
 		F74B368D1ED5DB7F009C1DD4 /* ZKMultiScrollViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZKMultiScrollViewController.m; sourceTree = "<group>"; };
 		F74B368F1ED5DBAB009C1DD4 /* ZKMultiScrollViewProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZKMultiScrollViewProtocol.h; sourceTree = "<group>"; };
+		F7A6F8031ED72227006BDC64 /* ZKTouchThroughScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZKTouchThroughScrollView.h; sourceTree = "<group>"; };
+		F7A6F8041ED72227006BDC64 /* ZKTouchThroughScrollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZKTouchThroughScrollView.m; sourceTree = "<group>"; };
+		F7A6F8061ED733B2006BDC64 /* UIScrollView+Boundry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIScrollView+Boundry.h"; sourceTree = "<group>"; };
+		F7A6F8071ED733B2006BDC64 /* UIScrollView+Boundry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIScrollView+Boundry.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +101,10 @@
 				F74B368C1ED5DB7F009C1DD4 /* ZKMultiScrollViewController.h */,
 				F74B368D1ED5DB7F009C1DD4 /* ZKMultiScrollViewController.m */,
 				F74B368F1ED5DBAB009C1DD4 /* ZKMultiScrollViewProtocol.h */,
+				F7A6F8031ED72227006BDC64 /* ZKTouchThroughScrollView.h */,
+				F7A6F8041ED72227006BDC64 /* ZKTouchThroughScrollView.m */,
+				F7A6F8061ED733B2006BDC64 /* UIScrollView+Boundry.h */,
+				F7A6F8071ED733B2006BDC64 /* UIScrollView+Boundry.m */,
 			);
 			path = exports;
 			sourceTree = "<group>";
@@ -171,10 +181,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F7A6F8081ED733B2006BDC64 /* UIScrollView+Boundry.m in Sources */,
 				F74B367C1ED5DB4A009C1DD4 /* ViewController.m in Sources */,
 				F74B36791ED5DB4A009C1DD4 /* AppDelegate.m in Sources */,
 				F7381A721ED5E95C0022964C /* TestTableViewController.m in Sources */,
 				F74B368E1ED5DB7F009C1DD4 /* ZKMultiScrollViewController.m in Sources */,
+				F7A6F8051ED72227006BDC64 /* ZKTouchThroughScrollView.m in Sources */,
 				F74B36761ED5DB4A009C1DD4 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
