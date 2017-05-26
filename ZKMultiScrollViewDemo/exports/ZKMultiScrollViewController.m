@@ -16,7 +16,10 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
 @interface ZKMultiScrollViewController () <UIScrollViewDelegate>
 @property (strong, nonatomic) NSMutableArray<UIViewController<ZKScrollableProtocol>*> *scrollables;
 @property (weak, nonatomic) UIScrollView *hScroll;
+
 @property (strong, nonatomic) NSMutableArray<NSNumber*> * visibleIndexs;
+@property (assign, nonatomic) NSInteger currentIndex;
+
 @property (weak, nonatomic) ZKTouchThroughScrollView *coverScrollView;
 
 @property (readonly, nonatomic) UIView *headerView;
@@ -42,6 +45,7 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
   self.scrollables = [NSMutableArray array];
   self.visibleIndexs = [NSMutableArray arrayWithObjects:@0, @(-1), nil];
   self.automaticallyAdjustsScrollViewInsets = NO;
+  self.currentIndex = 0;
   
   if (self.delegate) {
     [self setupSubviews];
@@ -170,6 +174,20 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
   }
 }
 
+- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView {
+  if (self.hScroll == scrollView) {
+    [self checkPageVisibility:scrollView];
+    self.currentIndex = [self.visibleIndexs[0] integerValue];
+  }
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
+  if (self.hScroll == scrollView) {
+    [self checkPageVisibility:scrollView];
+    self.currentIndex = [self.visibleIndexs[0] integerValue];
+  }
+}
+
 - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView
                      withVelocity:(CGPoint)velocity
               targetContentOffset:(inout CGPoint *)targetContentOffset {
@@ -183,8 +201,8 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
       [scrollView setContentOffset:offset animated:YES];
     }
   }
-
 }
+
 
 #pragma mark -- manage page visibility
 - (void)checkPageVisibility:(UIScrollView*)hScroll {
@@ -277,6 +295,7 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
 // only works when horizontal scroll just begins
 - (UIScrollView *)currentScrollView {
   if ([self.delegate numberOfScrollablesForController:self]) {
+    return [self.scrollables[self.currentIndex] scrollView];
     NSInteger left = [self.visibleIndexs[0] integerValue];
     NSInteger right = [self.visibleIndexs[1] integerValue];
     UIScrollView *leftScroll = left != -1 ? [self.scrollables[left] scrollView] : nil;

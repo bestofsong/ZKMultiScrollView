@@ -47,7 +47,7 @@
 
 - (UIViewController<ZKScrollableProtocol> *)scrollableAtIndex:(NSInteger)index forController:(UIViewController *)delegater {
   TestTableViewController *vc = [[TestTableViewController alloc] init];
-  vc.nCells = (1 + index) * 10;
+  vc.nCells = 5 + index * 20;
   return vc;
 }
 
