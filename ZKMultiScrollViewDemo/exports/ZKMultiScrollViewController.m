@@ -113,6 +113,7 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
     contentSize.height += headerView.bounds.size.height;
     self.coverScrollView.contentSize = contentSize;
     [self.view addSubview:self.coverScrollView];
+    self.coverScrollView.delegate = self;
     [self.coverScrollView addSubview:headerView];
     [self.coverScrollView addObserver:self
                            forKeyPath:@"contentOffset"
@@ -164,7 +165,25 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
 
 #pragma mark -- UIScrollViewDelegate
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-  [self checkPageVisibility:scrollView];
+  if (scrollView == self.hScroll) {
+    [self checkPageVisibility:scrollView];
+  }
+}
+
+- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView
+                     withVelocity:(CGPoint)velocity
+              targetContentOffset:(inout CGPoint *)targetContentOffset {
+  if (scrollView == self.coverScrollView) {
+    UIScrollView *currentPage = [self currentScrollView];
+    CGFloat correctOffsetY = [currentPage maxOffsetY] + self.headerView.bounds.size.height;
+    if (targetContentOffset ->y > correctOffsetY) {
+      *targetContentOffset = scrollView.contentOffset;
+      CGPoint offset = *targetContentOffset;
+      offset.y = correctOffsetY;
+      [scrollView setContentOffset:offset animated:YES];
+    }
+  }
+
 }
 
 #pragma mark -- manage page visibility
