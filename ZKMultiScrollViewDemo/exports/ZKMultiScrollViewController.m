@@ -178,6 +178,7 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
   if (self.hScroll == scrollView) {
     [self checkPageVisibility:scrollView];
     self.currentIndex = [self.visibleIndexs[0] integerValue];
+    NSLog(@"currentIndex: %ld", self.currentIndex);
   }
 }
 
@@ -185,6 +186,7 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
   if (self.hScroll == scrollView) {
     [self checkPageVisibility:scrollView];
     self.currentIndex = [self.visibleIndexs[0] integerValue];
+    NSLog(@"currentIndex: %ld", self.currentIndex);
   }
 }
 
