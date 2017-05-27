@@ -27,6 +27,9 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
 
 @implementation ZKMultiScrollViewController {
   BOOL _syncingOffset;
+  // 用于控制一次drag/scroll在一个方向上最多只有一次页码的变化，可以避免回弹问题
+  BOOL _leftPageTrigger;
+  BOOL _rightPageTrigger;
 }
 
 - (void)dealloc {
@@ -178,7 +181,6 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
   if (self.hScroll == scrollView) {
     [self checkPageVisibility:scrollView];
     self.currentIndex = [self.visibleIndexs[0] integerValue];
-    NSLog(@"currentIndex: %ld", self.currentIndex);
   }
 }
 
@@ -186,7 +188,13 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
   if (self.hScroll == scrollView) {
     [self checkPageVisibility:scrollView];
     self.currentIndex = [self.visibleIndexs[0] integerValue];
-    NSLog(@"currentIndex: %ld", self.currentIndex);
+  }
+}
+
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
+  if (scrollView == self.hScroll) {
+    _leftPageTrigger = YES;
+    _rightPageTrigger = YES;
   }
 }
 
@@ -206,6 +214,7 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
 }
 
 
+
 #pragma mark -- manage page visibility
 - (void)checkPageVisibility:(UIScrollView*)hScroll {
   NSArray<NSNumber*> *indexs = [self visiblePageIndexsForHScroll:hScroll];
@@ -214,7 +223,6 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
   
   NSInteger left0 = [self.visibleIndexs[0] integerValue];
   NSInteger right0 = [self.visibleIndexs[1] integerValue];
-  
   if (left == left0 && right == right0) {
     return;
   }
@@ -223,15 +231,24 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
     if (right == -1) {
       [self notifyPageVisible:NO atIndex:right0];
     } else {
-      [self notifyPageVisible:YES atIndex:right];
+      if (_rightPageTrigger) {
+        [self notifyPageVisible:YES atIndex:right];
+        _rightPageTrigger = NO;
+      }
     }
   } else {
     if (left < left0) {
-      [self notifyPageVisible:YES atIndex:left];
+      if (_leftPageTrigger) {
+        [self notifyPageVisible:YES atIndex:left];
+        _leftPageTrigger = NO;
+      }
     } else {
       [self notifyPageVisible:NO atIndex:left0];
       if (right != -1) {
-        [self notifyPageVisible:YES atIndex:right];
+        if (_rightPageTrigger) {
+          [self notifyPageVisible:YES atIndex:right];
+          _rightPageTrigger = NO;
+        }
       }
     }
   }
@@ -247,7 +264,12 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
   NSInteger pageWidthInPixel = hScroll.bounds.size.width * pixelsPerPoint;
   
   NSInteger left = hOffsetInPixel / pageWidthInPixel;
-  NSInteger right = hOffsetInPixel % pageWidthInPixel ? left + 1 : -1;
+  NSInteger right = -1;
+  if (hOffsetInPixel % pageWidthInPixel) {
+    right = left + 1;
+  } else {
+    right = -1;
+  }
   return @[@(left), @(right >= [self.delegate numberOfScrollablesForController:self] ? -1 : right)];
 }
 
@@ -285,7 +307,7 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
     targetOffset.y = MIN(nextScrollYMax, destOffsetY);
     shouldForceSyncCoverScroll = nextScrollYMax < destOffsetY;
   }
-  [nextScroll setContentOffset:targetOffset animated:YES];
+  [nextScroll setContentOffset:targetOffset];
   if (shouldForceSyncCoverScroll) {
     CGPoint coverOffset = targetOffset;
     coverOffset.y += self.headerView.bounds.size.height;
@@ -298,16 +320,6 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
 - (UIScrollView *)currentScrollView {
   if ([self.delegate numberOfScrollablesForController:self]) {
     return [self.scrollables[self.currentIndex] scrollView];
-    NSInteger left = [self.visibleIndexs[0] integerValue];
-    NSInteger right = [self.visibleIndexs[1] integerValue];
-    UIScrollView *leftScroll = left != -1 ? [self.scrollables[left] scrollView] : nil;
-    UIScrollView *rightScroll = right != -1 ? [self.scrollables[right] scrollView] : nil;
-    CGPoint center = [self.hScroll convertPoint:leftScroll.center toView:nil];
-    if (center.x >= 0 && center.x < self.view.bounds.size.width) {
-      return leftScroll;
-    } else {
-      return rightScroll;
-    }
   } else {
     return nil;
   }
