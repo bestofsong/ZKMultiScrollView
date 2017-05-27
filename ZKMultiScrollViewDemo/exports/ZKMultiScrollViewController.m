@@ -363,7 +363,6 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
   if (visible) {
     if (![self scrollableLoadedAtIndex:index] && index < [self.delegate numberOfScrollablesForController:self]) {
       [self loadNextScrollable];
-      [self installScrollable:self.scrollables[index] atIndex:index];
     }
     [self pickVerticalScrollForScrollAtIndex:index];
   }

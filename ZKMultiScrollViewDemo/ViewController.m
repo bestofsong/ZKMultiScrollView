@@ -28,6 +28,12 @@
   headFrame.size.height = 240;
   self.header = [[UIView alloc] initWithFrame:headFrame];
   self.header.backgroundColor = [UIColor greenColor];
+  UITapGestureRecognizer *gesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapHeader:)];
+  [self.header addGestureRecognizer:gesture];
+}
+
+- (void)tapHeader:(id)sender {
+  [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)pushTestViewController:(id)sender {
