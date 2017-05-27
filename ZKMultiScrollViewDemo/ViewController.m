@@ -38,7 +38,7 @@
 
 
 - (NSInteger)numberOfScrollablesForController:(UIViewController *)delegater {
-  return 3;
+  return 10;
 }
 
 - (NSString*)tabNameForScrollableAtIndex:(NSInteger)index forController:(UIViewController *)delegater {

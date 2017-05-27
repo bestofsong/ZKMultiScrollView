@@ -18,6 +18,14 @@
 
 @end
 
+@protocol ZKScrollableTabBarProtocol <NSObject>
+
+@property (assign, nonatomic) NSInteger selected;
+
+@property (copy, nonatomic) void (^onChangeSelect)(NSInteger selected);
+
+@end
+
 
 @protocol ZKMultiScrollViewProtocol <NSObject>
 

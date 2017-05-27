@@ -9,9 +9,71 @@
 #import "ZKMultiScrollViewController.h"
 #import "ZKTouchThroughScrollView.h"
 #import "UIScrollView+Boundry.h"
+#import "ZKScrollableTabBar.h"
 
 static void *COVER_SCROLL_KVO_CTX = &COVER_SCROLL_KVO_CTX;
 static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
+
+static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
+
+@interface ZKStickSubviewScrollView : ZKTouchThroughScrollView
+@property (strong, nonatomic) NSArray<UIView*> *stickSubviews;
+@property (strong, nonatomic) NSArray<NSValue*> *stickPositions;
+@end
+
+@implementation ZKStickSubviewScrollView
+
+- (void)dealloc {
+  if (_stickSubviews.count) {
+    [self removeObserver:self forKeyPath:@"contentOffset"];
+  }
+}
+
+- (void)setStickSubviews:(NSArray<UIView *> *)stickSubviews {
+  if (!_stickSubviews.count && stickSubviews.count) {
+    [self addObserver:self
+           forKeyPath:@"contentOffset"
+              options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
+              context:STICKY_SCROLL_KVO_CTX];
+  } else if (_stickSubviews.count && !stickSubviews.count) {
+    [self removeObserver:self forKeyPath:@"contentOffset"];
+  }
+  _stickSubviews = stickSubviews;
+  NSMutableArray *positions = [NSMutableArray array];
+  [stickSubviews enumerateObjectsUsingBlock:^(UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [positions addObject:[NSValue valueWithCGRect:obj.frame]];
+  }];
+  self.stickPositions = positions;
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+  if ([keyPath isEqualToString:@"contentOffset"] && context == STICKY_SCROLL_KVO_CTX) {
+    [self.stickSubviews enumerateObjectsUsingBlock:^(UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+      [self adjustSubviewAtindex:idx];
+    }];
+  } else {
+    [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+  }
+}
+
+- (void)adjustSubviewAtindex:(NSInteger)idx {
+  UIView *subview = self.stickSubviews[idx];
+  CGRect frame = subview.frame;
+  CGPoint upRim = [self.superview convertPoint:self.frame.origin toView:nil];
+  CGRect absFrame = [self convertRect:frame toView:nil];
+  CGFloat reachOut = upRim.y - absFrame.origin.y;
+  if (reachOut > 0) {
+    frame.origin.y += upRim.y - absFrame.origin.y;
+    subview.frame = frame;
+  } else {
+    CGRect originalPos = [self.stickPositions[idx] CGRectValue];
+    frame.origin.y -= MIN(-reachOut, MAX(0, frame.origin.y - originalPos.origin.y));
+    subview.frame = frame;
+  }
+}
+
+@end
+
 
 @interface ZKMultiScrollViewController () <UIScrollViewDelegate>
 @property (strong, nonatomic) NSMutableArray<UIViewController<ZKScrollableProtocol>*> *scrollables;
@@ -23,6 +85,8 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
 @property (weak, nonatomic) ZKTouchThroughScrollView *coverScrollView;
 
 @property (readonly, nonatomic) UIView *headerView;
+@property (readonly, nonatomic) CGFloat verticalScrollInset;
+@property (strong, nonatomic) UIView<ZKScrollableTabBarProtocol> *tabBar;
 @end
 
 @implementation ZKMultiScrollViewController {
@@ -41,6 +105,12 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
 
 - (UIView*)headerView {
   return [self.delegate headerViewForController:self];
+}
+
+- (CGFloat)verticalScrollInset {
+  UIView *header = self.headerView;
+  UIView *tabBar = self.tabBar;
+  return CGRectGetHeight(header.bounds) + CGRectGetHeight(tabBar.bounds);
 }
 
 - (void)viewDidLoad {
@@ -67,8 +137,8 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
   self.hScroll.backgroundColor = [UIColor whiteColor];
   [self.view addSubview:self.hScroll];
   
-  [self loadNextScrollable];
   [self installCoverScrollView];
+  [self loadNextScrollable];
 }
 
 - (BOOL)scrollableLoadedAtIndex:(NSInteger)index {
@@ -94,7 +164,7 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
   scrollableRoot.frame = CGRectMake(index * boundSize.width, 0, boundSize.width, boundSize.height);
   [self.hScroll addSubview:scrollableRoot];
   UIScrollView *scrollableScroll = [scrollable scrollView];
-  scrollableScroll.contentInset = UIEdgeInsetsMake(self.headerView.bounds.size.height,
+  scrollableScroll.contentInset = UIEdgeInsetsMake(self.verticalScrollInset,
                                                    0,
                                                    0,
                                                    0);
@@ -113,12 +183,9 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
   CGRect bounds = [self selfBounds];
   UIView *headerView = self.headerView;
   if (headerView) {
-    ZKTouchThroughScrollView *coverScrollView = [[ZKTouchThroughScrollView alloc] initWithFrame:bounds];
+    ZKStickSubviewScrollView *coverScrollView = [[ZKStickSubviewScrollView alloc] initWithFrame:bounds];
     self.coverScrollView = coverScrollView;
     self.coverScrollView.showsVerticalScrollIndicator = NO;
-    CGSize contentSize = bounds.size;
-    contentSize.height += headerView.bounds.size.height;
-    self.coverScrollView.contentSize = contentSize;
     [self.view addSubview:self.coverScrollView];
     self.coverScrollView.delegate = self;
     [self.coverScrollView addSubview:headerView];
@@ -126,6 +193,24 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
                            forKeyPath:@"contentOffset"
                               options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld | NSKeyValueObservingOptionInitial
                               context:COVER_SCROLL_KVO_CTX];
+    
+    NSMutableArray *names = [NSMutableArray array];
+    for (NSInteger i = 0; i < [self.delegate numberOfScrollablesForController:self]; i++) {
+      [names addObject:[self.delegate tabNameForScrollableAtIndex:i forController:self] ?: @"no name"];
+    }
+    ZKScrollableTabBar *tabBar = [[ZKScrollableTabBar alloc] initWithItemNames:names width:CGRectGetWidth(bounds)];
+    self.tabBar = tabBar;
+    CGRect frame = tabBar.frame;
+    frame.origin.y = CGRectGetMaxY(headerView.frame);
+    self.tabBar.frame = frame;
+    [self.coverScrollView addSubview:self.tabBar];
+    
+    
+    CGSize contentSize = bounds.size;
+    contentSize.height += self.verticalScrollInset;
+    self.coverScrollView.contentSize = contentSize;
+    
+    coverScrollView.stickSubviews = @[self.tabBar];
   }
 }
 
@@ -144,18 +229,19 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
       (context == COVER_SCROLL_KVO_CTX || context == PAGE_SCROLL_KVO_CTX)) {
     if (_syncingOffset) return;
     
-    _syncingOffset = YES;
     UIScrollView *currentScroll = [self currentScrollView];
+    if (!currentScroll) return;
+    _syncingOffset = YES;
     if (context == PAGE_SCROLL_KVO_CTX) {
       if (currentScroll == object) {
-        [self syncScrollView:currentScroll toScrollView:self.coverScrollView off:self.headerView.bounds.size.height];
+        [self syncScrollView:currentScroll toScrollView:self.coverScrollView off:self.verticalScrollInset];
       }
     } else {
       if (self.coverScrollView != object) {
         NSAssert(NO, @"不科学");
       }
       currentScroll.contentOffset = self.coverScrollView.contentOffset;
-      [self syncScrollView:self.coverScrollView toScrollView:currentScroll off:-self.headerView.bounds.size.height];
+      [self syncScrollView:self.coverScrollView toScrollView:currentScroll off:-self.verticalScrollInset];
     }
     _syncingOffset = NO;
     
@@ -310,7 +396,7 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
   [nextScroll setContentOffset:targetOffset];
   if (shouldForceSyncCoverScroll) {
     CGPoint coverOffset = targetOffset;
-    coverOffset.y += self.headerView.bounds.size.height;
+    coverOffset.y += self.verticalScrollInset;
     [self.coverScrollView setContentOffset:coverOffset animated:YES];
   }
   
@@ -319,6 +405,9 @@ static void *PAGE_SCROLL_KVO_CTX = &PAGE_SCROLL_KVO_CTX;
 // only works when horizontal scroll just begins
 - (UIScrollView *)currentScrollView {
   if ([self.delegate numberOfScrollablesForController:self]) {
+    if (self.scrollables.count <= self.currentIndex) {
+      return nil;
+    }
     return [self.scrollables[self.currentIndex] scrollView];
   } else {
     return nil;
