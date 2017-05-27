@@ -87,6 +87,9 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
 @property (readonly, nonatomic) UIView *headerView;
 @property (readonly, nonatomic) CGFloat verticalScrollInset;
 @property (strong, nonatomic) UIView<ZKScrollableTabBarProtocol> *tabBar;
+
+@property (assign, nonatomic) BOOL rightPageTrigger;
+@property (assign, nonatomic) BOOL leftPageTrigger;
 @end
 
 @implementation ZKMultiScrollViewController {
@@ -168,6 +171,7 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
                                                    0,
                                                    0,
                                                    0);
+  scrollableScroll.contentOffset = CGPointMake(0, -self.verticalScrollInset);
   [scrollableScroll addObserver:self
                      forKeyPath:@"contentOffset"
                         options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld
@@ -204,7 +208,13 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
     frame.origin.y = CGRectGetMaxY(headerView.frame);
     self.tabBar.frame = frame;
     [self.coverScrollView addSubview:self.tabBar];
-    
+    typeof(self) weakSelf = self;
+    tabBar.onChangeSelect = ^(NSInteger selected) {
+      [weakSelf notifyPageVisible:YES atIndex:selected];
+      CGPoint offset = weakSelf.hScroll.contentOffset;
+      offset.x = selected * weakSelf.view.bounds.size.width;
+      [weakSelf.hScroll setContentOffset:offset animated:YES];
+    };
     
     CGSize contentSize = bounds.size;
     contentSize.height += self.verticalScrollInset + 2000;
