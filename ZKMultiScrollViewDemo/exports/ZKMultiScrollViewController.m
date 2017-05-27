@@ -207,7 +207,7 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
     
     
     CGSize contentSize = bounds.size;
-    contentSize.height += self.verticalScrollInset;
+    contentSize.height += self.verticalScrollInset + 2000;
     self.coverScrollView.contentSize = contentSize;
     
     coverScrollView.stickSubviews = @[self.tabBar];
@@ -236,7 +236,7 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
       if (currentScroll == object) {
         [self syncScrollView:currentScroll toScrollView:self.coverScrollView off:self.verticalScrollInset];
       }
-    } else {
+    } else if (context == COVER_SCROLL_KVO_CTX) {
       if (self.coverScrollView != object) {
         NSAssert(NO, @"不科学");
       }
@@ -293,7 +293,7 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
               targetContentOffset:(inout CGPoint *)targetContentOffset {
   if (scrollView == self.coverScrollView) {
     UIScrollView *currentPage = [self currentScrollView];
-    CGFloat correctOffsetY = [currentPage maxOffsetY] + self.headerView.bounds.size.height;
+    CGFloat correctOffsetY = [currentPage maxOffsetY] + self.verticalScrollInset;
     if (targetContentOffset ->y > correctOffsetY) {
       *targetContentOffset = scrollView.contentOffset;
       CGPoint offset = *targetContentOffset;
@@ -302,7 +302,6 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
     }
   }
 }
-
 
 
 #pragma mark -- manage page visibility
