@@ -30,7 +30,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
   UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell" forIndexPath:indexPath];
-  cell.textLabel.text = [NSString stringWithFormat:@"cell - %ld", (long)indexPath.row];
+  cell.textLabel.text = [NSString stringWithFormat:@"cell - %ld - %ld", self.nCells, (long)indexPath.row];
   return cell;
 }
 

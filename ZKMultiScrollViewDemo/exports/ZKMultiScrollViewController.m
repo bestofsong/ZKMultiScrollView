@@ -274,6 +274,10 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
   if (self.hScroll == scrollView) {
     [self checkPageVisibility:scrollView];
     self.currentIndex = [self.visibleIndexs[0] integerValue];
+    self.tabBar.selected = self.currentIndex;
+    for (NSInteger ii = self.scrollables.count; ii <= self.currentIndex; ii++) {
+      [self notifyPageVisible:YES atIndex:ii];
+    }
   }
 }
 
@@ -361,7 +365,7 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
 
 - (void)notifyPageVisible:(BOOL)visible atIndex:(NSInteger)index {
   if (visible) {
-    if (![self scrollableLoadedAtIndex:index] && index < [self.delegate numberOfScrollablesForController:self]) {
+    for (NSInteger ii = self.scrollables.count; ii <= self.currentIndex || ii <= index; ii++) {
       [self loadNextScrollable];
     }
     [self pickVerticalScrollForScrollAtIndex:index];
@@ -370,10 +374,9 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
 
 - (void)pickVerticalScrollForScrollAtIndex:(NSInteger)index {
   UIScrollView *nextScroll = [self.scrollables[index] scrollView];
-  NSInteger theOther = index == [self.visibleIndexs[0] integerValue] ? [self.visibleIndexs[1] integerValue] : [self.visibleIndexs[0] integerValue];
   
-  UIScrollView *nowScroll = [self.scrollables[theOther] scrollView];
-  CGPoint targetOffset = nowScroll.contentOffset;
+  CGPoint targetOffset = self.coverScrollView.contentOffset;
+  targetOffset.y -= self.verticalScrollInset;
   CGPoint nowOffset = nextScroll.contentOffset;
   
   CGFloat destOffsetY = MIN(targetOffset.y, 0);
@@ -398,7 +401,6 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
     coverOffset.y += self.verticalScrollInset;
     [self.coverScrollView setContentOffset:coverOffset animated:YES];
   }
-  
 }
 
 // only works when horizontal scroll just begins
