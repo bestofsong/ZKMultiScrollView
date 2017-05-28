@@ -44,6 +44,8 @@
 // already rendered header view
 - (UIView*)headerViewForController:(UIViewController*)delegater;
 
+- (UIView<ZKScrollableTabBarProtocol> *)tabBar;
+
 @end
 
 

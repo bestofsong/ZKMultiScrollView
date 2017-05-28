@@ -105,6 +105,7 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
   // 用于控制一次drag/scroll在一个方向上最多只有一次页码的变化，可以避免回弹问题
   BOOL _leftPageTrigger;
   BOOL _rightPageTrigger;
+  BOOL _didSetup;
 }
 
 - (void)dealloc {
@@ -114,9 +115,21 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
   }];
 }
 
+- (void)loadView {
+  if (self.viewClass) {
+    UIView *view = (UIView*)[[self.viewClass alloc] init];
+    self.view = view;
+  } else {
+    [super loadView];
+  }
+}
+
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
-  
+  [self layoutSubviews];
+}
+
+- (void)layoutSubviews {
   CGRect bounds = [self selfBounds];
   self.hScroll.frame = bounds;
   self.coverScrollView.frame = bounds;
@@ -128,7 +141,7 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
   headerViewFrame.size.width = bounds.size.width;
   headerViewFrame.origin = CGPointZero;
   self.headerView.frame = headerViewFrame;
-
+  
   [self.coverScrollView adjustAllSubviews];
   CGSize contentSize1 = self.hScroll.contentSize;
   contentSize1 = self.hScroll.contentSize;
@@ -159,6 +172,13 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
   return CGRectGetHeight(header.bounds) + CGRectGetHeight(tabBar.bounds);
 }
 
+- (void)setDelegate:(id<ZKMultiScrollViewProtocol>)delegate {
+  if (_delegate) {
+    NSAssert(NO, @"不支持改变delegate");
+  }
+  _delegate = delegate;
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.scrollables = [NSMutableArray array];
@@ -172,6 +192,13 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
 }
 
 - (void)setupSubviews {
+  if (_didSetup) return;
+  _didSetup = YES;
+
+  [self forceSetupSubviews];
+}
+
+- (void)forceSetupSubviews {
   NSInteger nScrollable = [self.delegate numberOfScrollablesForController:self];
   CGRect bounds = [self selfBounds];
   UIScrollView *hScroll = [[UIScrollView alloc] initWithFrame:bounds];
@@ -248,7 +275,11 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
   for (NSInteger i = 0; i < [self.delegate numberOfScrollablesForController:self]; i++) {
     [names addObject:[self.delegate tabNameForScrollableAtIndex:i forController:self] ?: @"no name"];
   }
-  ZKScrollableTabBar *tabBar = names.count ? [[ZKScrollableTabBar alloc] initWithItemNames:names width:CGRectGetWidth(bounds)] : nil;
+  
+  UIView<ZKScrollableTabBarProtocol> *tabBar = [self.delegate respondsToSelector:@selector(tabBar)] ? [self.delegate tabBar] : nil;
+  if (!tabBar) {
+    tabBar = names.count ? [[ZKScrollableTabBar alloc] initWithItemNames:names width:CGRectGetWidth(bounds)] : nil;
+  }
   self.tabBar = tabBar;
   CGRect frame = tabBar.frame;
   frame.origin.y = CGRectGetMaxY(headerView.frame);

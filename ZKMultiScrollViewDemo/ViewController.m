@@ -39,6 +39,7 @@
   self.header1.backgroundColor = [UIColor redColor];
   
   ZKMultiScrollViewController *vc = [[ZKMultiScrollViewController alloc] init];
+  vc.viewClass = [UIView class];
   vc.delegate = self;
   self.vc1 = vc;
   [self addChildViewController:vc];

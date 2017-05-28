@@ -12,6 +12,8 @@
 
 @interface ZKMultiScrollViewController : UIViewController
 
+@property (assign, nonatomic) Class viewClass;
+
 @property (weak, nonatomic) id<ZKMultiScrollViewProtocol> delegate;
 
 @end
