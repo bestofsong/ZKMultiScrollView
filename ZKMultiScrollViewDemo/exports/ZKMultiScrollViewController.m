@@ -230,42 +230,45 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
 - (void)installCoverScrollView {
   CGRect bounds = [self selfBounds];
   UIView *headerView = self.headerView;
+  
+  ZKStickSubviewScrollView *coverScrollView = [[ZKStickSubviewScrollView alloc] initWithFrame:bounds];
+  self.coverScrollView = coverScrollView;
+  self.coverScrollView.showsVerticalScrollIndicator = NO;
+  [self.view addSubview:self.coverScrollView];
+  self.coverScrollView.delegate = self;
   if (headerView) {
-    ZKStickSubviewScrollView *coverScrollView = [[ZKStickSubviewScrollView alloc] initWithFrame:bounds];
-    self.coverScrollView = coverScrollView;
-    self.coverScrollView.showsVerticalScrollIndicator = NO;
-    [self.view addSubview:self.coverScrollView];
-    self.coverScrollView.delegate = self;
     [self.coverScrollView addSubview:headerView];
-    [self.coverScrollView addObserver:self
-                           forKeyPath:@"contentOffset"
-                              options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld | NSKeyValueObservingOptionInitial
-                              context:COVER_SCROLL_KVO_CTX];
-    
-    NSMutableArray *names = [NSMutableArray array];
-    for (NSInteger i = 0; i < [self.delegate numberOfScrollablesForController:self]; i++) {
-      [names addObject:[self.delegate tabNameForScrollableAtIndex:i forController:self] ?: @"no name"];
-    }
-    ZKScrollableTabBar *tabBar = [[ZKScrollableTabBar alloc] initWithItemNames:names width:CGRectGetWidth(bounds)];
-    self.tabBar = tabBar;
-    CGRect frame = tabBar.frame;
-    frame.origin.y = CGRectGetMaxY(headerView.frame);
-    self.tabBar.frame = frame;
-    [self.coverScrollView addSubview:self.tabBar];
-    typeof(self) weakSelf = self;
-    tabBar.onChangeSelect = ^(NSInteger selected) {
-      [weakSelf notifyPageVisible:YES atIndex:selected];
-      CGPoint offset = weakSelf.hScroll.contentOffset;
-      offset.x = selected * weakSelf.view.bounds.size.width;
-      [weakSelf.hScroll setContentOffset:offset animated:YES];
-    };
-    
-    CGSize contentSize = bounds.size;
-    contentSize.height += self.verticalScrollInset + 2000;
-    self.coverScrollView.contentSize = contentSize;
-    
-    coverScrollView.stickSubviews = @[self.tabBar];
   }
+  [self.coverScrollView addObserver:self
+                         forKeyPath:@"contentOffset"
+                            options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld | NSKeyValueObservingOptionInitial
+                            context:COVER_SCROLL_KVO_CTX];
+  
+  NSMutableArray *names = [NSMutableArray array];
+  for (NSInteger i = 0; i < [self.delegate numberOfScrollablesForController:self]; i++) {
+    [names addObject:[self.delegate tabNameForScrollableAtIndex:i forController:self] ?: @"no name"];
+  }
+  ZKScrollableTabBar *tabBar = names.count ? [[ZKScrollableTabBar alloc] initWithItemNames:names width:CGRectGetWidth(bounds)] : nil;
+  self.tabBar = tabBar;
+  CGRect frame = tabBar.frame;
+  frame.origin.y = CGRectGetMaxY(headerView.frame);
+  self.tabBar.frame = frame;
+  if (tabBar) {
+    [self.coverScrollView addSubview:self.tabBar];
+  }
+  typeof(self) weakSelf = self;
+  tabBar.onChangeSelect = ^(NSInteger selected) {
+    [weakSelf notifyPageVisible:YES atIndex:selected];
+    CGPoint offset = weakSelf.hScroll.contentOffset;
+    offset.x = selected * weakSelf.view.bounds.size.width;
+    [weakSelf.hScroll setContentOffset:offset animated:YES];
+  };
+  
+  CGSize contentSize = bounds.size;
+  contentSize.height += self.verticalScrollInset + 2000;
+  self.coverScrollView.contentSize = contentSize;
+  
+  coverScrollView.stickSubviews = @[self.tabBar];
 }
 
 - (void)uninstallCoverScrollView {
