@@ -19,6 +19,8 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
 @interface ZKStickSubviewScrollView : ZKTouchThroughScrollView
 @property (strong, nonatomic) NSArray<UIView*> *stickSubviews;
 @property (strong, nonatomic) NSArray<NSValue*> *stickPositions;
+
+- (void)adjustAllSubviews;
 @end
 
 @implementation ZKStickSubviewScrollView
@@ -72,6 +74,12 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
   }
 }
 
+- (void)adjustAllSubviews {
+  [self.stickSubviews enumerateObjectsUsingBlock:^(UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [self adjustSubviewAtindex:idx];
+  }];
+}
+
 @end
 
 
@@ -82,7 +90,7 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
 @property (strong, nonatomic) NSMutableArray<NSNumber*> * visibleIndexs;
 @property (assign, nonatomic) NSInteger currentIndex;
 
-@property (weak, nonatomic) ZKTouchThroughScrollView *coverScrollView;
+@property (weak, nonatomic) ZKStickSubviewScrollView *coverScrollView;
 
 @property (readonly, nonatomic) UIView *headerView;
 @property (readonly, nonatomic) CGFloat verticalScrollInset;
@@ -104,6 +112,41 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
   [self.scrollables enumerateObjectsUsingBlock:^(UIViewController<ZKScrollableProtocol> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
     [self uninstallScrollable:obj];
   }];
+}
+
+- (void)viewWillLayoutSubviews {
+  [super viewWillLayoutSubviews];
+  
+  CGRect bounds = [self selfBounds];
+  self.hScroll.frame = bounds;
+  self.coverScrollView.frame = bounds;
+  CGSize contentSize = self.coverScrollView.contentSize;
+  contentSize.width = CGRectGetWidth(bounds);
+  self.coverScrollView.contentSize = contentSize;
+  
+  CGRect headerViewFrame = self.headerView.frame;
+  headerViewFrame.size.width = bounds.size.width;
+  headerViewFrame.origin = CGPointZero;
+  self.headerView.frame = headerViewFrame;
+
+  [self.coverScrollView adjustAllSubviews];
+  CGSize contentSize1 = self.hScroll.contentSize;
+  contentSize1 = self.hScroll.contentSize;
+  contentSize1.height = CGRectGetHeight(bounds);
+  contentSize1.width = [self.delegate numberOfScrollablesForController:self] * CGRectGetWidth(bounds);
+  self.hScroll.contentSize = contentSize1;
+  
+  [self.scrollables enumerateObjectsUsingBlock:^(UIViewController<ZKScrollableProtocol> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    UIView *page = [obj scrollView];
+    page.frame = CGRectMake(idx * CGRectGetWidth(bounds), 0, CGRectGetWidth(bounds), CGRectGetHeight(bounds));
+    CGSize csize = [obj scrollView].contentSize;
+    csize.width = CGRectGetWidth(bounds);
+    [obj scrollView].contentSize = csize;
+  }];
+  
+  CGRect frame = self.tabBar.frame;
+  frame.size.width = CGRectGetWidth(bounds);
+  self.tabBar.frame = frame;
 }
 
 - (UIView*)headerView {
@@ -135,6 +178,7 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
   self.hScroll = hScroll;
   self.hScroll.delegate = self;
   self.hScroll.pagingEnabled = YES;
+  self.hScroll.directionalLockEnabled = YES;
   self.hScroll.showsHorizontalScrollIndicator = NO;
   self.hScroll.contentSize = CGSizeMake(nScrollable * bounds.size.width, bounds.size.height);
   self.hScroll.backgroundColor = [UIColor whiteColor];

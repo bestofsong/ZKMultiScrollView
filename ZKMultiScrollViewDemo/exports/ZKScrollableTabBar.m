@@ -66,6 +66,13 @@
   self.selected = 0;
 }
 
+- (void)layoutSubviews {
+  [super layoutSubviews];
+  CGRect scrollFrame = self.scrollView.frame;
+  scrollFrame.size.width = CGRectGetWidth(self.bounds);
+  self.scrollView.frame = scrollFrame;
+}
+
 - (void)setSelected:(NSInteger)selected {
   if (_selected == selected) {
     return;
@@ -77,6 +84,7 @@
     self.itemViews[prev].selected = NO;
   }
   self.itemViews[selected].selected = YES;
+  [self.scrollView scrollRectToVisible:self.itemViews[selected].frame animated:YES];
 }
 
 - (void)onButtonTapped:(UIButton*)sender {

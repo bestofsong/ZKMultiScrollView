@@ -11,13 +11,17 @@
 #import "TestTableViewController.h"
 @interface ViewController () <ZKMultiScrollViewProtocol>
 @property (strong, nonatomic) UIView *header;
+@property (strong, nonatomic) UIView *header1;
+@property (weak, nonatomic) UIViewController *vc;
+@property (weak, nonatomic) UIViewController *vc1;
 @end
 
 @implementation ViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  UIButton *but = [[UIButton alloc] initWithFrame:CGRectMake(100, 100, 100, 100)];
+  self.view.backgroundColor = [UIColor grayColor];
+  UIButton *but = [[UIButton alloc] initWithFrame:CGRectMake(60, 60, 40, 40)];
   [self.view addSubview:but];
   [but addTarget:self action:@selector(pushTestViewController:) forControlEvents:UIControlEventTouchUpInside];
   [but setTitle:@"push" forState:UIControlStateNormal];
@@ -30,6 +34,19 @@
   self.header.backgroundColor = [UIColor greenColor];
   UITapGestureRecognizer *gesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapHeader:)];
   [self.header addGestureRecognizer:gesture];
+  
+  self.header1 = [[UIView alloc] initWithFrame:headFrame];
+  self.header1.backgroundColor = [UIColor redColor];
+  
+  ZKMultiScrollViewController *vc = [[ZKMultiScrollViewController alloc] init];
+  vc.delegate = self;
+  self.vc1 = vc;
+  [self addChildViewController:vc];
+  CGRect testFrame = CGRectMake(100, 100, 250, 500);
+  vc.view.frame = testFrame;
+  vc.view.backgroundColor = [UIColor redColor];
+  [self.view addSubview:vc.view];
+  [vc didMoveToParentViewController:self];
 }
 
 - (void)tapHeader:(id)sender {
@@ -39,6 +56,7 @@
 - (void)pushTestViewController:(id)sender {
   ZKMultiScrollViewController *vc = [[ZKMultiScrollViewController alloc] init];
   vc.delegate = self;
+  self.vc = vc;
   [self.navigationController pushViewController:vc animated:YES];
 }
 
@@ -53,12 +71,16 @@
 
 - (UIViewController<ZKScrollableProtocol> *)scrollableAtIndex:(NSInteger)index forController:(UIViewController *)delegater {
   TestTableViewController *vc = [[TestTableViewController alloc] init];
-  vc.nCells = 5 + index * 20;
+  vc.nCells = 50 + index * 20;
   return vc;
 }
 
 - (UIView*)headerViewForController:(UIViewController *)delegater {
-  return self.header;
+  if (delegater == self.vc) {
+    return self.header;
+  } else {
+    return self.header1;
+  }
 }
 
 @end
