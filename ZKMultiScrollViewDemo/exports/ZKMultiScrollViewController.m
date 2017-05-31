@@ -19,7 +19,7 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
 @interface ZKStickSubviewScrollView : ZKTouchThroughScrollView
 @property (strong, nonatomic) NSArray<UIView*> *stickSubviews;
 @property (strong, nonatomic) NSArray<NSValue*> *stickPositions;
-
+@property (strong, nonatomic) NSArray<UIView*> *fixedSubviews;
 - (void)adjustAllSubviews;
 @end
 
@@ -48,24 +48,34 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
   self.stickPositions = positions;
 }
 
+- (void)setFixedSubviews:(NSArray<UIView *> *)fixedSubviews {
+  if (!_fixedSubviews.count && fixedSubviews.count) {
+    [self addObserver:self
+           forKeyPath:@"contentOffset"
+              options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
+              context:STICKY_SCROLL_KVO_CTX];
+  } else if (_fixedSubviews.count && !fixedSubviews.count) {
+    [self removeObserver:self forKeyPath:@"contentOffset"];
+  }
+  _fixedSubviews = fixedSubviews;
+}
+
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
   if ([keyPath isEqualToString:@"contentOffset"] && context == STICKY_SCROLL_KVO_CTX) {
-    [self.stickSubviews enumerateObjectsUsingBlock:^(UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-      [self adjustSubviewAtindex:idx];
-    }];
+    [self adjustAllSubviews];
   } else {
     [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
   }
 }
 
-- (void)adjustSubviewAtindex:(NSInteger)idx {
+- (void)adjustStickySubviewAtindex:(NSInteger)idx {
   UIView *subview = self.stickSubviews[idx];
   CGRect frame = subview.frame;
   CGPoint upRim = [self.superview convertPoint:self.frame.origin toView:nil];
   CGRect absFrame = [self convertRect:frame toView:nil];
   CGFloat reachOut = upRim.y - absFrame.origin.y;
   if (reachOut > 0) {
-    frame.origin.y += upRim.y - absFrame.origin.y;
+    frame.origin.y += reachOut;
     subview.frame = frame;
   } else {
     CGRect originalPos = [self.stickPositions[idx] CGRectValue];
@@ -74,10 +84,24 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
   }
 }
 
+- (void)adjustFixedSubviewAtindex:(NSInteger)idx {
+  UIView *subview = self.fixedSubviews[idx];
+  CGRect frame = subview.frame;
+  CGPoint upRim = [self.superview convertPoint:self.frame.origin toView:nil];
+  CGRect absFrame = [self convertRect:frame toView:nil];
+  frame.origin.y += upRim.y - absFrame.origin.y;
+  subview.frame = frame;
+}
+
+
 - (void)adjustAllSubviews {
   [self.stickSubviews enumerateObjectsUsingBlock:^(UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    [self adjustSubviewAtindex:idx];
+    [self adjustStickySubviewAtindex:idx];
   }];
+  [self.fixedSubviews enumerateObjectsUsingBlock:^(UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [self adjustFixedSubviewAtindex:idx];
+  }];
+
 }
 
 @end
@@ -299,7 +323,11 @@ static void *STICKY_SCROLL_KVO_CTX = &STICKY_SCROLL_KVO_CTX;
   contentSize.height += self.verticalScrollInset + 2000;
   self.coverScrollView.contentSize = contentSize;
   
-  coverScrollView.stickSubviews = @[self.tabBar];
+  if (CGRectGetHeight(self.headerView.bounds) > 0) {
+    coverScrollView.stickSubviews = @[self.tabBar];
+  } else {
+    coverScrollView.fixedSubviews = @[self.tabBar];
+  }
 }
 
 - (void)uninstallCoverScrollView {

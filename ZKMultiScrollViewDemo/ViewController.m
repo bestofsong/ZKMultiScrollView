@@ -80,7 +80,7 @@
   if (delegater == self.vc) {
     return self.header;
   } else {
-    return self.header1;
+    return nil;
   }
 }
 
